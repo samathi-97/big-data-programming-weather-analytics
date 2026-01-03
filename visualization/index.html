@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Analytics Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+   <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>☁️ Weather Analytics Dashboard</h1>
+      <p class="subtitle">Comprehensive Climate Data Analysis & Insights</p>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Card 1: Precipitation by Season -->
+      <div class="card full-width">
+        <div class="card-header">
+          <div class="card-icon icon-purple">🌧️</div>
+          <h2 class="card-title">Most Precipitous Month by District</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="seasonalChart"></canvas>
+        </div>
+        <div class="legend-custom" id="seasonalLegend"></div>
+      </div>
+
+      <!-- Card 2: Top 5 Districts -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon icon-blue">📊</div>
+          <h2 class="card-title">Top 5 Districts by Precipitation</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="topDistrictsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Card 3: Temperature Analysis -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon icon-orange">🌡️</div>
+          <h2 class="card-title">High Temperature Months (>30°C)</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="temperatureChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Card 4: Extreme Weather Events -->
+      <div class="card full-width">
+        <div class="card-header">
+          <div class="card-icon icon-red">⚡</div>
+          <h2 class="card-title">Extreme Weather Events by District</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="extremeWeatherChart"></canvas>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value">847</div>
+            <div class="stat-label">Total Extreme Days</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">142</div>
+            <div class="stat-label">Peak District Days</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">12</div>
+            <div class="stat-label">Districts Analyzed</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">71</div>
+            <div class="stat-label">Average per District</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Data Analysis Dashboard • Last Updated: Dec 2025</p>
+    </footer>
+  </div>
+ <script src="dashboard.js" defer></script>
+
+</body>
+
+</html>
