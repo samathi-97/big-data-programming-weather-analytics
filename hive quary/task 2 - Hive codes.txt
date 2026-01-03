@@ -1,0 +1,131 @@
+docker pull apache/hive:4.0.0
+
+docker run -d -p 10000:10000 -p 10002:10002 -e SERVICE_NAME=hiveserver2 --name hive4 apache/hive:4.0.0
+docker run -d -p 10000:10000 -p 10002:10002 -e SERVICE_NAME=hiveserver2 -v "E:\IIT lectures\Big Data Programming\Assessment\02. Hive\data:/data" --name hive4 apache/hive:4.0.0
+
+--- verify we have data
+docker exec -it hive4 /bin/bash
+ls /data
+
+---database ---------------------------------------------------------------------------------
+beeline -u 'jdbc:hive2://localhost:10000/'
+---------------------------------------------------------------------------------------------
+
+CREATE DATABASE IF NOT EXISTS weather_analytics;
+---------------------------------------------------------------------------------------------
+USE weather_analytics;
+---------------------------------------------------------------------------------------------
+SHOW TABLES;
+---------------------------------------------------------------------------------------------
+DROP TABLE IF EXISTS weather_fact;
+---------------------------------------------------------------------------------------------
+CREATE EXTERNAL TABLE weather_fact (
+  location_id                       INT,
+  date_str                          STRING,
+  weather_code                      INT,
+  temperature_2m_max_c              DOUBLE,
+  temperature_2m_min_c              DOUBLE,
+  temperature_2m_mean_c             DOUBLE,
+  apparent_temperature_max_c        DOUBLE,
+  apparent_temperature_min_c        DOUBLE,
+  apparent_temperature_mean_c       DOUBLE,
+  daylight_duration_s               INT,
+  sunshine_duration_s               INT,
+  precipitation_sum_mm              DOUBLE,
+  rain_sum_mm                       DOUBLE,
+  precipitation_hours_h             DOUBLE,
+  wind_speed_10m_max_kmh            DOUBLE,
+  wind_gusts_10m_max_kmh            DOUBLE,
+  wind_direction_10m_dominant_deg   DOUBLE,
+  shortwave_radiation_sum_mj_m2     DOUBLE,
+  et0_fao_evapotranspiration_mm     DOUBLE,
+  sunrise_str                       STRING,
+  sunset_str                        STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/data/weather'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+------------------------------------------------------------------------------------------------------------
+USE weather_analytics;
+------------------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS location_dim;
+---------------------------------------------------------------------------------------------------------------
+CREATE EXTERNAL TABLE location_dim (
+  location_id           INT,
+  latitude              DOUBLE,
+  longitude             DOUBLE,
+  elevation             INT,
+  utc_offset_seconds    INT,
+  timezone              STRING,
+  timezone_abbreviation STRING,
+  city_name             STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/data/location'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+-------------------------------------------------------------------------------------------------------------
+USE weather_analytics;
+
+WITH weather_season AS (
+  SELECT
+    l.city_name,
+    w.location_id,
+    w.et0_fao_evapotranspiration_mm AS et0,
+    from_unixtime(unix_timestamp(w.date_str, 'M/d/yyyy')) AS dt,
+    MONTH(from_unixtime(unix_timestamp(w.date_str, 'M/d/yyyy'))) AS month_num,
+    CASE
+      WHEN MONTH(from_unixtime(unix_timestamp(w.date_str, 'M/d/yyyy'))) IN (9,10,11,12,1,2,3)
+        THEN 'MAHA'
+      WHEN MONTH(from_unixtime(unix_timestamp(w.date_str, 'M/d/yyyy'))) IN (4,5,6,7,8)
+        THEN 'YALA'
+      ELSE 'UNKNOWN'
+    END AS season
+  FROM
+    weather_fact w
+  JOIN
+    location_dim l
+  ON
+    w.location_id = l.location_id
+)
+
+SELECT
+  city_name,
+  season,
+  ROUND(AVG(et0), 3) AS avg_evapotranspiration_mm,
+  COUNT(*) AS days_count
+FROM
+  weather_season
+WHERE
+  season <> 'UNKNOWN'
+GROUP BY
+  city_name,
+  season
+ORDER BY
+  city_name,
+  season;
+
+---------------------------------------------------------------------------------------------------
+SELECT
+    l.city_name,
+    ROUND(AVG(w.temperature_2m_max_c), 2) AS avg_max_temperature_c,
+    ROUND(ABS(AVG(w.temperature_2m_max_c) - 22.5), 2) AS comfort_deviation
+FROM
+    weather_fact w
+JOIN
+    location_dim l
+ON
+    w.location_id = l.location_id
+GROUP BY
+    l.city_name
+ORDER BY
+    comfort_deviation ASC
+LIMIT 10;
+
+
