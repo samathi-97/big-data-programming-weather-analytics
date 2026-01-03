@@ -21,7 +21,7 @@ public class DistrictMonthlyStatsReducer
         Configuration conf = context.getConfiguration();
 
         // HDFS path where you put the location data
-        Path locPath = new Path("/weather/ref/locationData.csv");
+        Path locPath = new Path("/user/hadoop/input/locationData.csv");
 
         FileSystem fs = locPath.getFileSystem(conf);
 
